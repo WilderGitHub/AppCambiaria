@@ -1,0 +1,2 @@
+el directorio de trabajo es app. 
+Enay esta el script "app.py" y los "parametros.xlsx"
