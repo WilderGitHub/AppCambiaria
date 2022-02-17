@@ -29,14 +29,14 @@ def llenarData(concepto, a, b):
     if concepto != "Neteo":
         #print('dentro ',pares["Comprobante"][a])
         data2.append({
-            "Tipo": pares["Tipo"][a], "Comprobante": pares["Comprobante"][a], "Concepto": concepto,
+            "Fecha": pares["Fecha"][a],"Tipo": pares["Tipo"][a], "Comprobante": pares["Comprobante"][a], "Concepto": concepto,
             "Mayor1": pares["Mayor"][a], "Mayor2": pares["Mayor"][b], "codMov": pares["codMov"][b],
             "Movimiento": pares["Movimiento"][b], "MontoUSD": round(pares["MN"][a]/6.86, 2),
             "Detalle": pares["GlosaDetalle"][b], "Glosa": pares["Glosa"][a]
         })
     else:
         data2.append({
-            "Tipo": pares["Tipo"][a], "Comprobante": pares["Comprobante"][a], "Concepto": concepto,
+            "Fecha": pares["Fecha"][a],"Tipo": pares["Tipo"][a], "Comprobante": pares["Comprobante"][a], "Concepto": concepto,
             "Mayor1": pares["Mayor"][a], "Mayor2": pares["Mayor"][b], "codMov": pares["codMov"][b],
             "Movimiento": pares["Movimiento"][b], "MontoUSD": 0,
             "Detalle": ("±", round(pares["MN"][a]/6.86, 2)), "Glosa": pares["Glosa"][a]
@@ -47,14 +47,14 @@ def dv(concepto, suma):
     #print("largo cuando dentra al debehaber: ",len(aux2))
     if len(aux2) == 1:
         data2.append({''
-                      "Tipo": aux2["tipo"][0], "Comprobante": aux2["comprobante"][0], "Concepto": concepto,
+                      "Fecha": aux2["fecha"][0],"Tipo": aux2["tipo"][0], "Comprobante": aux2["comprobante"][0], "Concepto": concepto,
                       "Mayor1": aux2["mayor"][0], "Mayor2": "--", "codMov": "--",
                       "Movimiento": "--", "MontoUSD": round(suma, 2),
                       "Detalle": aux2["glosaRenglon"][0], "Glosa": aux2["glosa"][0]
                       })
     else:
         data2.append({''
-                      "Tipo": aux2["tipo"][0], "Comprobante": aux2["comprobante"][0], "Concepto": concepto,
+                      "Fecha": aux2["fecha"][0],"Tipo": aux2["tipo"][0], "Comprobante": aux2["comprobante"][0], "Concepto": concepto,
                       "Mayor1": aux2["mayor"][0], "Mayor2": aux2["mayor"][1], "codMov": aux2["codMov"][1],
                       "Movimiento": aux2["nomMov"][1], "MontoUSD": round(suma, 2),
                       "Detalle": aux2["glosaRenglon"][0], "Glosa": aux2["glosa"][0]
@@ -111,12 +111,12 @@ while True:
         bdgoi = pd.read_excel(nombreGOI)
         bdgtes = pd.read_excel(nombreGTES)
         bdBruto = pd.concat([bdgtes, bdgoi, bdgom, bdgef], ignore_index=True)
-        bdReducida = bdBruto.loc[:, ('nro_centro', 'cve_tipo_comprob', 'glosa_reng', 'cve_debe_haber', 'monto_mo',
+        bdReducida = bdBruto.loc[:, ('fecha_dia','nro_centro', 'cve_tipo_comprob', 'glosa_reng', 'cve_debe_haber', 'monto_mo',
                                      'cod_moneda', 'cod_movimiento', 'nom_movimiento',
                                      'monto_mn', 'glosa_comprob', 'nro_comprob', 'cod_mayor')]
         index_names = bdReducida[bdReducida['nro_centro'] != 1].index
         bdReducida.drop(index_names, inplace=True)
-        dict = {'cve_tipo_comprob': 'tipo', 'glosa_reng': 'glosaRenglon', 'cve_debe_haber': 'dh', 'monto_mo': 'mo',
+        dict = {'fecha_dia': 'fecha','cve_tipo_comprob': 'tipo', 'glosa_reng': 'glosaRenglon', 'cve_debe_haber': 'dh', 'monto_mo': 'mo',
                 'cod_moneda': 'moneda', 'cod_movimiento': 'codMov', 'nom_movimiento': 'nomMov',
                 'monto_mn': 'mn', 'glosa_comprob': 'glosa', 'nro_comprob': 'comprobante', 'cod_mayor': 'mayor'}
         bdReducida.rename(columns=dict, inplace=True)
@@ -137,10 +137,10 @@ while True:
             aux2 = bd[bd["comprobante"] == aux1[q]]
             aux2 = aux2.reset_index(drop=True)
             data1 = []
-            columnas1 = ["Tipo", "Comprobante", "Concepto", "Mayor",
+            columnas1 = ["Fecha","Tipo", "Comprobante", "Concepto", "Mayor",
                          "codMov", "Movimiento", "MN", "Glosa", "GlosaDetalle"]
             data2 = []
-            columnas2 = ["Tipo", "Comprobante", "Concepto", "Mayor1", "Mayor2", "codMov",
+            columnas2 = ["Fecha","Tipo", "Comprobante", "Concepto", "Mayor1", "Mayor2", "codMov",
                          "Movimiento", "MontoUSD", "Detalle", "Glosa"]  # luego pones mas campos importantes
             #print("Comprobante ",q)
             # print(aux2["comprobante"][0])
@@ -160,7 +160,7 @@ while True:
                     if len(aux4) == 2:
                         for x in range(len(aux4)):
                             data1.append({
-                                "Tipo": aux2["tipo"][aux4[x]], "Comprobante": aux2["comprobante"][aux4[x]], "Concepto": aux2["dh"][aux4[x]],
+                                "Fecha": aux2["fecha"][aux4[x]],"Tipo": aux2["tipo"][aux4[x]], "Comprobante": aux2["comprobante"][aux4[x]], "Concepto": aux2["dh"][aux4[x]],
                                 "Mayor": aux2["mayor"][aux4[x]], "codMov": aux2["codMov"][aux4[x]], "Movimiento": aux2["nomMov"][aux4[x]],
                                 "MN": aux2["mn"][aux4[x]], "Glosa": aux2["glosa"][aux4[x]], "GlosaDetalle": aux2["glosaRenglon"][aux4[x]],
                             })
@@ -194,7 +194,7 @@ while True:
                     # print(aux2)
                     for x in range(len(aux2)):
                         data1.append({
-                            "Tipo": aux2["tipo"][x], "Comprobante": aux2["comprobante"][x], "Concepto": aux2["dh"][x],
+                            "Fecha": aux2["fecha"][x],"Tipo": aux2["tipo"][x], "Comprobante": aux2["comprobante"][x], "Concepto": aux2["dh"][x],
                             "Mayor": aux2["mayor"][x], "codMov": aux2["codMov"][x], "Movimiento": aux2["nomMov"][x],
                             "MN": aux2["mn"][x], "Glosa": aux2["glosa"][x], "GlosaDetalle": aux2["glosaRenglon"][x],
                         })
