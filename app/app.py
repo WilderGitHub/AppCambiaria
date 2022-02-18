@@ -261,7 +261,7 @@ while True:
 
         conCodigos
         # dt.datetime.today().strftime("%m/%d/%Y")
-        nombreSalida = "PreCargaBC_" + pd.Timestamp.now().strftime("%d%b%H%M")
+        nombreSalida = "Bruto_"+conCodigos["Fecha"].min().strftime("%d%b") +"-"+conCodigos["Fecha"].max().strftime("%d%b")+"("+pd.Timestamp.now().strftime("%d%b%H%M")+")"
         # get current directory
         path = os.getcwd()
         print("Current Directory", path)
@@ -271,3 +271,5 @@ while True:
         conCodigos.to_excel(parent+"/"+nombreSalida+".xlsx", index=False)
         print("Ya hemos generado el excel oe")
         # eso
+    
+        
