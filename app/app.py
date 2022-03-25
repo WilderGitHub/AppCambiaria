@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import os
 import numpy as np
 import pandas as pd
+from dbfread import DBF
 import re
 import itertools
 from pandas import Series, DataFrame
@@ -74,6 +75,18 @@ def debemenoshaber(hasta):
         dv("Ingreso", suma)
     else:
         dv("Egreso", -suma)
+        
+def leer(nombrearchivo):
+    extension =os.path.splitext(nombrearchivo)[1]     
+    print(nombrearchivo)
+    if extension == '.dbf':
+        print(extension)
+        print("estamos en dbf con  ",nombrearchivo)
+        table = DBF(nombrearchivo,encoding='latin', load =True)
+        return pd.DataFrame(iter(table))
+    else:
+        print(extension)
+        return pd.read_excel(nombrearchivo) 
 # funciones
 
 
@@ -100,23 +113,46 @@ while True:
     if event == sg.WIN_CLOSED or event == "Exit":
         break
     elif event == "Procesar":
-        #direccion = values["-GEF-"]
-        #nombreGEF = os.path.basename(direccion)
+        
         nombreGEF = os.path.abspath(values["-GEF2-"])
         nombreGOM = os.path.abspath(values["-GOM-"])
         nombreGOI = os.path.abspath(values["-GOI2-"])
         nombreGTES = os.path.abspath(values["-GTES2-"])
-        bdgef = pd.read_excel(nombreGEF)
+        
+        bdgef = leer(nombreGEF)
+        bdgom = leer(nombreGOM)
+        bdgoi = leer(nombreGOI)
+        bdgtes= leer(nombreGTES)
+        
+        ''' bdgef = pd.read_excel(nombreGEF)
         bdgom = pd.read_excel(nombreGOM)
         bdgoi = pd.read_excel(nombreGOI)
-        bdgtes = pd.read_excel(nombreGTES)
+        bdgtes = pd.read_excel(nombreGTES) '''
+        
         bdBruto = pd.concat([bdgtes, bdgoi, bdgom, bdgef], ignore_index=True)
-        bdReducida = bdBruto.loc[:, ('fecha_dia','nro_centro', 'cve_tipo_comprob', 'glosa_reng', 'cve_debe_haber', 'monto_mo',
+        ######################
+        bdBruto.columns = map(str.lower, bdBruto.columns)
+        ######################
+        if os.path.splitext(nombreGEF)[1] =='.dbf':
+            bdReducida = bdBruto.loc[:, ('fecha_dia','nro_centro', 'cve_tipo_c', 'glosa_reng', 'cve_debe_h', 'monto_mo',
+                                     'cod_moneda', 'cod_movimi', 'nom_movimi',
+                                     'monto_mn', 'glosa_comp', 'nro_compro', 'cod_mayor')]
+        else:
+                
+            bdReducida = bdBruto.loc[:, ('fecha_dia','nro_centro', 'cve_tipo_comprob', 'glosa_reng', 'cve_debe_haber', 'monto_mo',
                                      'cod_moneda', 'cod_movimiento', 'nom_movimiento',
                                      'monto_mn', 'glosa_comprob', 'nro_comprob', 'cod_mayor')]
         index_names = bdReducida[bdReducida['nro_centro'] != 1].index
         bdReducida.drop(index_names, inplace=True)
-        dict = {'fecha_dia': 'fecha','cve_tipo_comprob': 'tipo', 'glosa_reng': 'glosaRenglon', 'cve_debe_haber': 'dh', 'monto_mo': 'mo',
+        
+        
+        if os.path.splitext(nombreGEF)[1] =='.dbf':
+            dict = {'fecha_dia': 'fecha','cve_tipo_c': 'tipo', 'glosa_reng': 'glosaRenglon', 'cve_debe_h': 'dh', 'monto_mo': 'mo',
+                'cod_moneda': 'moneda', 'cod_movimi': 'codMov', 'nom_movimi': 'nomMov',
+                'monto_mn': 'mn', 'glosa_comp': 'glosa', 'nro_compro': 'comprobante', 'cod_mayor': 'mayor'}
+        else:
+                
+            dict = {'fecha_dia': 'fecha','cve_tipo_comprob': 'tipo', 'glosa_reng': 'glosaRenglon', 'cve_debe_haber': 'dh', 'monto_mo': 'mo',
                 'cod_moneda': 'moneda', 'cod_movimiento': 'codMov', 'nom_movimiento': 'nomMov',
                 'monto_mn': 'mn', 'glosa_comprob': 'glosa', 'nro_comprob': 'comprobante', 'cod_mayor': 'mayor'}
         bdReducida.rename(columns=dict, inplace=True)
@@ -216,7 +252,7 @@ while True:
                 consolidado = consolidado.append(unRegistro, ignore_index=True)
 
         consolidado
-        # consolidado.to_excel("borrareste.xlsx")
+        consolidado.to_excel("borrareste.xlsx")
         # la cosa
 
         # las apropiaciones
