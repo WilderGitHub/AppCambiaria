@@ -9,13 +9,13 @@ from pandas import Series, DataFrame
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
-#from junciones import *
+# from junciones import *
 # parámetros y valores fijos
 parametros = "parametros.xlsx"
 movimientos = pd.read_excel(parametros, sheet_name="movimientos")
 cuentas = [7, 10, 11, 12, 16, 17]
 valorDefecto = "Ver glosita"
-#########bdBruto= pd.concat([bdgtes,bdgoi,bdgom,bdgef],ignore_index=True)
+# bdBruto= pd.concat([bdgtes,bdgoi,bdgom,bdgef],ignore_index=True)
 palabrasClave = pd.read_excel(parametros, sheet_name="palabras")
 listaPalabrasClave = palabrasClave['PalabrasClave'].values.tolist()
 apachurrado = ''
@@ -28,7 +28,7 @@ apachurrado = apachurrado[1:]
 
 def llenarData(concepto, a, b):
     if concepto != "Neteo":
-        #print('dentro ',pares["Comprobante"][a])
+        # print('dentro ',pares["Comprobante"][a])
         data2.append({
             "Fecha": pares["Fecha"][a], "Tipo": pares["Tipo"][a], "Comprobante": pares["Comprobante"][a], "Concepto": concepto,
             "Mayor1": pares["Mayor"][a], "Mayor2": pares["Mayor"][b], "codMov": pares["codMov"][b],
@@ -45,11 +45,11 @@ def llenarData(concepto, a, b):
 
 
 def dv(concepto, suma):
-    #print("largo cuando dentra al debehaber: ",len(aux2))
+    # print("largo cuando dentra al debehaber: ",len(aux2))
     if len(aux2) == 1:
         data2.append({''
                       "Fecha": aux2["fecha"][0], "Tipo": aux2["tipo"][0], "Comprobante": aux2["comprobante"][0], "Concepto": concepto,
-                      "Mayor1": aux2["mayor"][0], "Mayor2": "--", "codMov": "--",
+                      "Mayor1": aux2["mayor"][0], "Mayor2": "999", "codMov": "999",
                       "Movimiento": "--", "MontoUSD": round(suma, 2),
                       "Detalle": aux2["glosaRenglon"][0], "Glosa": aux2["glosa"][0]
                       })
@@ -134,7 +134,7 @@ while True:
         ######################
         bdBruto.columns = map(str.lower, bdBruto.columns)
         ######################
-        print("El bruto", bdBruto)
+
         if os.path.splitext(nombreGEF)[1] == '.dbf':
             bdReducida = bdBruto.loc[:, ('fecha_dia', 'nro_centro', 'cve_tipo_c', 'glosa_reng', 'cve_debe_h', 'monto_mo',
                                      'cod_moneda', 'cod_movimi', 'nom_movimi',
@@ -157,14 +157,21 @@ while True:
                     'cod_moneda': 'moneda', 'cod_movimiento': 'codMov', 'nom_movimiento': 'nomMov',
                     'monto_mn': 'mn', 'glosa_comprob': 'glosa', 'nro_comprob': 'comprobante', 'cod_mayor': 'mayor'}
         bdReducida.rename(columns=dict, inplace=True)
+        print("El  reducido ", bdReducida)
+        bdReducida['mayor'] = bdReducida['mayor'].astype(float)
         bdFiltro1 = bdReducida[bdReducida['mayor'].isin(cuentas)]
+        # print("las cuentas ", bdReducida['comprobante'])
+        print("El  reducido mayor isincuentas ",
+              bdReducida['mayor'].astype(float))
+        print("El  bdFiltro1 ", bdFiltro1)
+
         bdFiltro1["comprobante"].unique()
         bd = bdReducida[bdReducida["comprobante"].isin(
             bdFiltro1["comprobante"])].sort_values(by=["comprobante", "dh"], ascending=True)
         bd = bd.reset_index(drop=True)
         bd = bd.drop_duplicates()
         bd = bd.reset_index(drop=True)
-
+        print("El  bd ", bd)
         #######
 
         # la cosa
@@ -180,7 +187,7 @@ while True:
             data2 = []
             columnas2 = ["Fecha", "Tipo", "Comprobante", "Concepto", "Mayor1", "Mayor2", "codMov",
                          "Movimiento", "MontoUSD", "Detalle", "Glosa"]  # luego pones mas campos importantes
-            #print("Comprobante ",q)
+            # print("Comprobante ",q)
             # print(aux2["comprobante"][0])
             # los ajustes por arbitraje y revalorizacion ######
             if aux2["tipo"][0] == 'V' or aux2["tipo"][0] == 'D':
@@ -188,7 +195,7 @@ while True:
                 unRegistro = pd.DataFrame(data2, columns=columnas2)
                 consolidado = consolidado.append(unRegistro, ignore_index=True)
             else:  # estos son los casos normales digamos ##############################################################
-                #print("Hay duplicado: ",aux2.duplicated(subset=['mn']).any())
+                # print("Hay duplicado: ",aux2.duplicated(subset=['mn']).any())
                 # aqui sacamos los repetidos en la MN
                 if aux2.duplicated(subset=['mn']).any() == True:
                     aux3 = aux2.duplicated(subset=['mn'], keep=False)
@@ -203,25 +210,25 @@ while True:
                                 "MN": aux2["mn"][aux4[x]], "Glosa": aux2["glosa"][aux4[x]], "GlosaDetalle": aux2["glosaRenglon"][aux4[x]],
                             })
                             pares = pd.DataFrame(data1, columns=columnas1)
-                        #print("largo de aux2: ",len(aux2))
+                        # print("largo de aux2: ",len(aux2))
                         # print(pares)
                         if pares["Mayor"][0] in cuentas and pares["Mayor"][1] in cuentas:
-                            #print("Posible Neteo")
+                            # print("Posible Neteo")
                             # aqui ver para que el monto sea cero y que en el detalle salga el monto
                             llenarData("Neteo", 0, 1)
                             unRegistro = pd.DataFrame(data2, columns=columnas2)
                         else:
                             if pares["Mayor"][0] in cuentas and pares["Mayor"][1] not in cuentas and pares["Concepto"][0] == "D":
-                                #print('caso 1')
+                                # print('caso 1')
                                 llenarData("Ingreso", 0, 1)
                             if pares["Mayor"][0] in cuentas and pares["Mayor"][1] not in cuentas and pares["Concepto"][0] == "H":
-                                #print('caso 2')
+                                # print('caso 2')
                                 llenarData("Egreso", 0, 1)
                             if pares["Mayor"][1] in cuentas and pares["Mayor"][0] not in cuentas and pares["Concepto"][1] == "D":
-                                #print('caso 3')
+                                # print('caso 3')
                                 llenarData("Ingreso", 1, 0)
                             if pares["Mayor"][1] in cuentas and pares["Mayor"][0] not in cuentas and pares["Concepto"][1] == "H":
-                                #print('caso 4')
+                                # print('caso 4')
                                 llenarData("Egreso", 1, 0)
                     else:
                         debemenoshaber(range(len(aux2)))
@@ -240,43 +247,49 @@ while True:
                     # print(pares)
                     # los sueltitos (se supone que los otros movimientos estan en otras areas, ej. gadm)
                     if len(aux2) == 1:
-                        #print("entramos con 1")
+                        # print("entramos con 1")
                         if pares["Concepto"][0] == "D":
-                            #print('caso 5')
+                            # print('caso 5')
                             llenarData("Ingreso", 0, 0)
                         else:
-                            #print('caso 6')
+                            # print('caso 6')
                             llenarData("Egreso", 0, 0)
                     else:             # Aqui es cuando no hay duplicados y no son pares ni sueltitos
-                        #print("mas de 2")
+                        # print("mas de 2")
                         debemenoshaber(range(len(aux2)))
                 unRegistro = pd.DataFrame(data2, columns=columnas2)
                 consolidado = consolidado.append(unRegistro, ignore_index=True)
 
         consolidado
         consolidado.to_excel("borrareste.xlsx")
+        print("El consolidado  ", consolidado)
+        print("El consolidado tipos   ", consolidado.dtypes)
+
+        consolidado['Mayor2'] = pd.to_numeric(consolidado['Mayor2'])
+        consolidado['codMov'] = pd.to_numeric(consolidado['codMov'])
         # la cosa
 
         # las apropiaciones
         movimientosAux = movimientos.drop(columns=['nomMovimiento'])
+        print("El moviimentoAux  ", movimientosAux.dtypes)
 
         conCodigos = pd.merge(consolidado, movimientosAux, on=[
-                              'Concepto', 'Mayor2', 'codMov'], how='left').fillna(valorDefecto)
+            'Concepto', 'Mayor2', 'codMov'], how='left').fillna(valorDefecto)
         # las apropiaciones
         # eso
         for i in range(len(conCodigos)):
             objeto = conCodigos.loc[i, "Glosa"] + \
                 str(conCodigos.loc[i, "Detalle"])
-            #print(i, "=",objeto)
+            # print(i, "=",objeto)
             buscareis = re.findall(r'(%s)' % apachurrado,
                                    objeto, flags=re.IGNORECASE+re.MULTILINE)
-            #print ("antes ", buscareis)
+            # print ("antes ", buscareis)
             unasola = list(itertools.chain.from_iterable(buscareis))
-            #print("una sola ",unasola)
+            # print("una sola ",unasola)
             unasola = list(dict.fromkeys(unasola))
             unasola = [i for i in unasola if i]
-            #print("sin duplicados ",unasola)
-            #este =', '.join(map(str,unasola))
+            # print("sin duplicados ",unasola)
+            # este =', '.join(map(str,unasola))
 
             if conCodigos.loc[i, "Tipo"] in ["D", "V"]:
                 if conCodigos.loc[i, "Concepto"] == "Ingreso":
@@ -292,7 +305,7 @@ while True:
                                    "codigoBC"] = "ABONOS TRANSITORIOS (BCI31)"
 
             if conCodigos.loc[i, "codigoPropio"] == valorDefecto:
-                #print ("este ", este)
+                # print ("este ", este)
                 # print(conCodigos.loc[i,"codigoPropio"])
                 conCodigos.loc[i, "codigoPropio"] = ', '.join(
                     map(str, unasola))
