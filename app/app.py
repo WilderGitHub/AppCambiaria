@@ -13,6 +13,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 # parámetros y valores fijos
 parametros = "parametros.xlsx"
 movimientos = pd.read_excel(parametros, sheet_name="movimientos")
+clasificador = pd.read_excel(parametros, sheet_name="clasificador")
 cuentas = [7, 10, 11, 12, 16, 17]
 valorDefecto = "Ver glosita"
 # bdBruto= pd.concat([bdgtes,bdgoi,bdgom,bdgef],ignore_index=True)
@@ -79,14 +80,14 @@ def debemenoshaber(hasta):
 
 def leer(nombrearchivo):
     extension = os.path.splitext(nombrearchivo)[1]
-    print(nombrearchivo)
+    #print(nombrearchivo)
     if extension == '.dbf':
-        print(extension)
-        print("estamos en dbf con  ", nombrearchivo)
+        #print(extension)
+        #print("estamos en dbf con  ", nombrearchivo)
         table = DBF(nombrearchivo, encoding='latin', load=True)
         return pd.DataFrame(iter(table))
     else:
-        print(extension)
+        #print(extension)
         return pd.read_excel(nombrearchivo)
 # funciones
 
@@ -109,6 +110,7 @@ layout = [[sg.T("")],
 # Creamos la ventana
 window = sg.Window('Balenza Cambiaria', layout, size=(750, 250))
 # escuchamos los eventos
+print("Estamos estiendo, no vasde tocar nada")
 while True:
     event, values = window.read()
     if event == sg.WIN_CLOSED or event == "Exit":
@@ -157,13 +159,13 @@ while True:
                     'cod_moneda': 'moneda', 'cod_movimiento': 'codMov', 'nom_movimiento': 'nomMov',
                     'monto_mn': 'mn', 'glosa_comprob': 'glosa', 'nro_comprob': 'comprobante', 'cod_mayor': 'mayor'}
         bdReducida.rename(columns=dict, inplace=True)
-        print("El  reducido ", bdReducida)
+        #print("El  reducido ", bdReducida)
         bdReducida['mayor'] = bdReducida['mayor'].astype(float)
         bdFiltro1 = bdReducida[bdReducida['mayor'].isin(cuentas)]
         # print("las cuentas ", bdReducida['comprobante'])
-        print("El  reducido mayor isincuentas ",
-              bdReducida['mayor'].astype(float))
-        print("El  bdFiltro1 ", bdFiltro1)
+        #print("El  reducido mayor isincuentas ",
+        #      bdReducida['mayor'].astype(float))
+        #print("El  bdFiltro1 ", bdFiltro1)
 
         bdFiltro1["comprobante"].unique()
         bd = bdReducida[bdReducida["comprobante"].isin(
@@ -171,7 +173,7 @@ while True:
         bd = bd.reset_index(drop=True)
         bd = bd.drop_duplicates()
         bd = bd.reset_index(drop=True)
-        print("El  bd ", bd)
+        #print("El  bd ", bd)
         #######
 
         # la cosa
@@ -262,8 +264,8 @@ while True:
 
         consolidado
         consolidado.to_excel("borrareste.xlsx")
-        print("El consolidado  ", consolidado)
-        print("El consolidado tipos   ", consolidado.dtypes)
+        #print("El consolidado  ", consolidado)
+        #print("El consolidado tipos   ", consolidado.dtypes)
 
         consolidado['Mayor2'] = pd.to_numeric(consolidado['Mayor2'])
         consolidado['codMov'] = pd.to_numeric(consolidado['codMov'])
@@ -271,7 +273,9 @@ while True:
 
         # las apropiaciones
         movimientosAux = movimientos.drop(columns=['nomMovimiento'])
-        print("El moviimentoAux  ", movimientosAux.dtypes)
+       #print("El clasificador suelto  ", clasificador)
+        clasificadorAux = clasificador.drop(columns=['x'])
+        #print("El clasificadorAux  ", clasificadorAux)
 
         conCodigos = pd.merge(consolidado, movimientosAux, on=[
             'Concepto', 'Mayor2', 'codMov'], how='left').fillna(valorDefecto)
@@ -311,15 +315,20 @@ while True:
                     map(str, unasola))
 
         conCodigos
+        
+        conClasificador = pd.merge(conCodigos, clasificadorAux, on=[
+            'codigoBC'], how='left').fillna(valorDefecto)
+        
         # dt.datetime.today().strftime("%m/%d/%Y")
         nombreSalida = "Bruto_"+conCodigos["Fecha"].min().strftime("%d%b") + "-"+conCodigos["Fecha"].max(
         ).strftime("%d%b")+"("+pd.Timestamp.now().strftime("%d%b%H%M")+")"
         # get current directory
         path = os.getcwd()
-        print("Current Directory", path)
+        #print("Current Directory", path)
         # parent directory
         parent = os.path.dirname(path)
-        print("Parent directory", parent)
-        conCodigos.to_excel(parent+"/"+nombreSalida+".xlsx", index=False)
+        #print("Parent directory", parent)
+        ######conCodigos.to_excel(parent+"/"+nombreSalida+".xlsx", index=False)
+        conClasificador.to_excel(parent+"/"+nombreSalida+".xlsx", index=False)
         print("Ya hemos generado el excel oe")
         # eso
