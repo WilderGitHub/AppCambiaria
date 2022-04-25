@@ -175,35 +175,30 @@ while True:
         bd = bd.reset_index(drop=True)
         #print("El  bd ", bd)
         #######
-
-        # la cosa
-        aux1 = bd["comprobante"].unique()
-        consolidado = pd.DataFrame()
+        ###############################################################################################
+        ################################ la cosa ######################################################
+        aux1 = bd["comprobante"].unique()  # creamos un dataframe vacio
+        consolidado = pd.DataFrame() # creamos un dataframe vació
 
         for q in range(len(aux1)):
-            aux2 = bd[bd["comprobante"] == aux1[q]]
-            aux2 = aux2.reset_index(drop=True)
+            aux2 = bd[bd["comprobante"] == aux1[q]] # Vamos comprobante por comprobante
+            aux2 = aux2.reset_index(drop=True) # reseteamos el index
             data1 = []
             columnas1 = ["Fecha", "Tipo", "Comprobante", "Concepto", "Mayor",
                          "codMov", "Movimiento", "MN", "Glosa", "GlosaDetalle"]
             data2 = []
             columnas2 = ["Fecha", "Tipo", "Comprobante", "Concepto", "Mayor1", "Mayor2", "codMov",
                          "Movimiento", "MontoUSD", "Detalle", "Glosa"]  # luego pones mas campos importantes
-            # print("Comprobante ",q)
-            # print(aux2["comprobante"][0])
-            # los ajustes por arbitraje y revalorizacion ######
-            if aux2["tipo"][0] == 'V' or aux2["tipo"][0] == 'D':
-                debemenoshaber(aux2.index)
-                unRegistro = pd.DataFrame(data2, columns=columnas2)
+            
+            if aux2["tipo"][0] == 'V' or aux2["tipo"][0] == 'D': # los ajustes por arbitraje y revalorizacion ######
+                debemenoshaber(aux2.index) # aplicamos función para sumar y luego la función para llenar  los comprobantes DV
+                unRegistro = pd.DataFrame(data2, columns=columnas2) 
                 consolidado = consolidado.append(unRegistro, ignore_index=True)
             else:  # estos son los casos normales digamos ##############################################################
-                # print("Hay duplicado: ",aux2.duplicated(subset=['mn']).any())
                 # aqui sacamos los repetidos en la MN
-                if aux2.duplicated(subset=['mn']).any() == True:
-                    aux3 = aux2.duplicated(subset=['mn'], keep=False)
-                    aux4 = aux3.index[aux3 == True].tolist()
-                   # print('aux4')
-                   # print(aux4)
+                if aux2.duplicated(subset=['mn']).any() == True:  #si hay duplicado en MN  entonces...
+                    aux3 = aux2.duplicated(subset=['mn'], keep=False) #mantenemos los que no se repiten
+                    aux4 = aux3.index[aux3 == True].tolist() # el array de indices
                     if len(aux4) == 2:
                         for x in range(len(aux4)):
                             data1.append({
@@ -212,7 +207,6 @@ while True:
                                 "MN": aux2["mn"][aux4[x]], "Glosa": aux2["glosa"][aux4[x]], "GlosaDetalle": aux2["glosaRenglon"][aux4[x]],
                             })
                             pares = pd.DataFrame(data1, columns=columnas1)
-                        # print("largo de aux2: ",len(aux2))
                         # print(pares)
                         if pares["Mayor"][0] in cuentas and pares["Mayor"][1] in cuentas:
                             # print("Posible Neteo")
@@ -235,7 +229,6 @@ while True:
                     else:
                         debemenoshaber(range(len(aux2)))
                 else:   # Aqui anotamos todos los que no son repetidos
-                    # print('aux2')
                     aux2 = aux2.sort_values(by='mayor')  # , key=cuentas)
                     aux2 = aux2.reset_index(drop=True)
                     # print(aux2)
@@ -264,19 +257,13 @@ while True:
 
         consolidado
         consolidado.to_excel("borrareste.xlsx")
-        #print("El consolidado  ", consolidado)
-        #print("El consolidado tipos   ", consolidado.dtypes)
-
         consolidado['Mayor2'] = pd.to_numeric(consolidado['Mayor2'])
         consolidado['codMov'] = pd.to_numeric(consolidado['codMov'])
-        # la cosa
+        ################### la cosa ###################################
 
         # las apropiaciones
         movimientosAux = movimientos.drop(columns=['nomMovimiento'])
-       #print("El clasificador suelto  ", clasificador)
         clasificadorAux = clasificador.drop(columns=['x'])
-        #print("El clasificadorAux  ", clasificadorAux)
-
         conCodigos = pd.merge(consolidado, movimientosAux, on=[
             'Concepto', 'Mayor2', 'codMov'], how='left').fillna(valorDefecto)
         # las apropiaciones
