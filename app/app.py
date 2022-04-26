@@ -80,14 +80,14 @@ def debemenoshaber(hasta):
 
 def leer(nombrearchivo):
     extension = os.path.splitext(nombrearchivo)[1]
-    #print(nombrearchivo)
+    # print(nombrearchivo)
     if extension == '.dbf':
-        #print(extension)
+        # print(extension)
         #print("estamos en dbf con  ", nombrearchivo)
         table = DBF(nombrearchivo, encoding='latin', load=True)
         return pd.DataFrame(iter(table))
     else:
-        #print(extension)
+        # print(extension)
         return pd.read_excel(nombrearchivo)
 # funciones
 
@@ -133,10 +133,7 @@ while True:
         bdgtes = pd.read_excel(nombreGTES) '''
 
         bdBruto = pd.concat([bdgtes, bdgoi, bdgom, bdgef], ignore_index=True)
-        ######################
         bdBruto.columns = map(str.lower, bdBruto.columns)
-        ######################
-
         if os.path.splitext(nombreGEF)[1] == '.dbf':
             bdReducida = bdBruto.loc[:, ('fecha_dia', 'nro_centro', 'cve_tipo_c', 'glosa_reng', 'cve_debe_h', 'monto_mo',
                                      'cod_moneda', 'cod_movimi', 'nom_movimi',
@@ -163,7 +160,7 @@ while True:
         bdReducida['mayor'] = bdReducida['mayor'].astype(float)
         bdFiltro1 = bdReducida[bdReducida['mayor'].isin(cuentas)]
         # print("las cuentas ", bdReducida['comprobante'])
-        #print("El  reducido mayor isincuentas ",
+        # print("El  reducido mayor isincuentas ",
         #      bdReducida['mayor'].astype(float))
         #print("El  bdFiltro1 ", bdFiltro1)
 
@@ -178,27 +175,33 @@ while True:
         ###############################################################################################
         ################################ la cosa ######################################################
         aux1 = bd["comprobante"].unique()  # creamos un dataframe vacio
-        consolidado = pd.DataFrame() # creamos un dataframe vació
+        consolidado = pd.DataFrame()  # creamos un dataframe vació
 
         for q in range(len(aux1)):
-            aux2 = bd[bd["comprobante"] == aux1[q]] # Vamos comprobante por comprobante
-            aux2 = aux2.reset_index(drop=True) # reseteamos el index
+            # Vamos comprobante por comprobante
+            aux2 = bd[bd["comprobante"] == aux1[q]]
+            aux2 = aux2.reset_index(drop=True)  # reseteamos el index
             data1 = []
             columnas1 = ["Fecha", "Tipo", "Comprobante", "Concepto", "Mayor",
                          "codMov", "Movimiento", "MN", "Glosa", "GlosaDetalle"]
             data2 = []
             columnas2 = ["Fecha", "Tipo", "Comprobante", "Concepto", "Mayor1", "Mayor2", "codMov",
                          "Movimiento", "MontoUSD", "Detalle", "Glosa"]  # luego pones mas campos importantes
-            
-            if aux2["tipo"][0] == 'V' or aux2["tipo"][0] == 'D': # los ajustes por arbitraje y revalorizacion ######
-                debemenoshaber(aux2.index) # aplicamos función para sumar y luego la función para llenar  los comprobantes DV
-                unRegistro = pd.DataFrame(data2, columns=columnas2) 
+
+            # los ajustes por arbitraje y revalorizacion ######
+            if aux2["tipo"][0] == 'V' or aux2["tipo"][0] == 'D':
+                # aplicamos función para sumar y luego la función para llenar  los comprobantes DV
+                debemenoshaber(aux2.index)
+                unRegistro = pd.DataFrame(data2, columns=columnas2)
                 consolidado = consolidado.append(unRegistro, ignore_index=True)
             else:  # estos son los casos normales digamos ##############################################################
                 # aqui sacamos los repetidos en la MN
-                if aux2.duplicated(subset=['mn']).any() == True:  #si hay duplicado en MN  entonces...
-                    aux3 = aux2.duplicated(subset=['mn'], keep=False) #mantenemos los que no se repiten
-                    aux4 = aux3.index[aux3 == True].tolist() # el array de indices
+                # si hay duplicado en MN  entonces...
+                if aux2.duplicated(subset=['mn']).any() == True:
+                    # mantenemos los que no se repiten
+                    aux3 = aux2.duplicated(subset=['mn'], keep=False)
+                    # el array de indices
+                    aux4 = aux3.index[aux3 == True].tolist()
                     if len(aux4) == 2:
                         for x in range(len(aux4)):
                             data1.append({
@@ -302,10 +305,10 @@ while True:
                     map(str, unasola))
 
         conCodigos
-        
+
         conClasificador = pd.merge(conCodigos, clasificadorAux, on=[
             'codigoBC'], how='left').fillna(valorDefecto)
-        
+
         # dt.datetime.today().strftime("%m/%d/%Y")
         nombreSalida = "Bruto_"+conCodigos["Fecha"].min().strftime("%d%b") + "-"+conCodigos["Fecha"].max(
         ).strftime("%d%b")+"("+pd.Timestamp.now().strftime("%d%b%H%M")+")"
