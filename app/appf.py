@@ -1,17 +1,10 @@
-import PySimpleGUI as sg
-import os
-import numpy as np
-import pandas as pd
-from dbfread import DBF
-import re
-import itertools
-from pandas import Series, DataFrame
-
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from junciones import *
-# parámetros y valores fijos
-traerParametros()
 
-print ("ef", traerParametros())
+#Archivo de parámetros, movimientos y palabras clave
+parametros = "parametros.xlsx"
+archivo="gtes10ene.xls"
+#Aqui empezaría la onda
+print ("leyendo archivo ", leer(archivo).head(3))
